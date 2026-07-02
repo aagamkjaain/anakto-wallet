@@ -14,7 +14,8 @@ export default function DashboardTab() {
     contractAddress,
     connectWallet,
     updateActivityOnChain,
-    loading
+    loading,
+    error
   } = useWeb3();
 
   const [timeLeftStr, setTimeLeftStr] = useState("Calculating...");
@@ -83,6 +84,20 @@ export default function DashboardTab() {
           <button className="btn-primary" onClick={connectWallet}>
             Connect MetaMask
           </button>
+          {error && (
+            <div style={{
+              marginTop: '1.5rem',
+              padding: '0.8rem 1.5rem',
+              borderRadius: '12px',
+              background: 'rgba(239, 68, 68, 0.08)',
+              border: '1px solid rgba(239, 68, 68, 0.2)',
+              color: 'var(--color-danger)',
+              fontSize: '14px',
+              fontWeight: '500'
+            }}>
+              {error}
+            </div>
+          )}
         </div>
       )}
 

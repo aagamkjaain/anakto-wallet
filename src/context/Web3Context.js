@@ -112,6 +112,7 @@ export function Web3Provider({ children }) {
 
   // Database limits state
   const [limits, setLimits] = useState({ lowerLimit: null, upperLimit: null });
+  const [error, setError] = useState(null);
 
   // Disconnect function
   const disconnectWallet = useCallback(() => {
@@ -126,6 +127,7 @@ export function Web3Provider({ children }) {
     setLastActivity(0);
     setContractOwner("");
     setLimits({ lowerLimit: null, upperLimit: null });
+    setError(null);
     if (typeof window !== 'undefined') {
       localStorage.removeItem('wallet_connected');
     }
@@ -205,6 +207,7 @@ export function Web3Provider({ children }) {
     }
 
     setLoading(true);
+    setError(null);
     try {
       const web3 = new Web3(window.ethereum);
       setWeb3Instance(web3);
@@ -219,19 +222,17 @@ export function Web3Provider({ children }) {
       const contract = new web3.eth.Contract(contractABI, contractAddress);
       setContractInstance(contract);
 
-      // Trigger standard ping
-      try {
-        await contract.methods.updateActivity().send({ from: userAddress });
-      } catch (e) {
-        console.log("Activity update skipped or rejected", e);
-      }
-
       await refreshData(web3, userAddress, contract);
       await fetchDbLimits(userAddress);
 
       localStorage.setItem('wallet_connected', 'true');
-    } catch (error) {
-      console.error("Failed to connect wallet:", error);
+    } catch (err) {
+      console.error("Failed to connect wallet:", err);
+      if (err && err.code === 4001) {
+        setError("Connection request was rejected in MetaMask.");
+      } else {
+        setError(err?.message || "Failed to connect wallet.");
+      }
     } finally {
       setLoading(false);
     }
@@ -385,6 +386,8 @@ export function Web3Provider({ children }) {
       lastActivity,
       contractOwner,
       limits,
+      error,
+      setError,
       contractAddress,
       connectWallet,
       disconnectWallet,
